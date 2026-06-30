@@ -1,0 +1,87 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
+  body {
+    @apply bg-stone-50 text-ink antialiased;
+    @apply dark:bg-stone-950 dark:text-stone-100;
+  }
+  /* Visible focus for keyboard users across interactive elements. */
+  :focus-visible {
+    @apply outline-none ring-2 ring-accent-500 ring-offset-2 ring-offset-stone-50 dark:ring-offset-stone-950 rounded-sm;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-semibold tracking-tight text-ink dark:text-stone-50;
+  }
+}
+
+@layer components {
+  /* Long-form lesson prose. Kept deliberate rather than relying on a plugin. */
+  .prose-lesson {
+    @apply text-[0.975rem] leading-7 text-ink-soft dark:text-stone-300;
+  }
+  .prose-lesson h2 {
+    @apply mt-8 mb-3 text-xl;
+  }
+  .prose-lesson h3 {
+    @apply mt-6 mb-2 text-lg;
+  }
+  .prose-lesson p {
+    @apply my-3;
+  }
+  .prose-lesson ul {
+    @apply my-3 list-disc space-y-1.5 pl-5;
+  }
+  .prose-lesson ol {
+    @apply my-3 list-decimal space-y-1.5 pl-5;
+  }
+  .prose-lesson li {
+    @apply leading-7;
+  }
+  .prose-lesson strong {
+    @apply font-semibold text-ink dark:text-stone-100;
+  }
+  .prose-lesson a {
+    @apply text-accent-700 underline decoration-accent-300 underline-offset-2 dark:text-accent-300;
+  }
+  .prose-lesson blockquote {
+    @apply my-4 border-l-2 border-accent-300 pl-4 italic text-ink-faint dark:border-accent-700;
+  }
+  .prose-lesson code:not(pre code) {
+    @apply rounded bg-stone-200/70 px-1.5 py-0.5 font-mono text-[0.85em] text-ink dark:bg-stone-800 dark:text-stone-200;
+  }
+  .prose-lesson table {
+    @apply my-4 w-full border-collapse text-sm;
+  }
+  .prose-lesson th,
+  .prose-lesson td {
+    @apply border border-stone-200 px-3 py-2 text-left dark:border-stone-800;
+  }
+  .prose-lesson th {
+    @apply bg-stone-100 font-semibold dark:bg-stone-900;
+  }
+
+  .card {
+    @apply rounded-xl border border-stone-200 bg-white shadow-sm dark:border-stone-800 dark:bg-stone-900;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
