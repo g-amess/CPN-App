@@ -3,12 +3,16 @@ import { Menu, BookOpen, GraduationCap, Library, LayoutDashboard, HelpCircle } f
 import { SearchBar } from './SearchBar'
 import { ThemeToggle } from './ThemeToggle'
 import { ProfileMenu } from './ProfileMenu'
-import { buildModules } from '../content/buildTrack'
-
-const firstLessonPath = `/build/${buildModules[0].id}/${buildModules[0].lessons[0].id}`
+import { useContent } from '../content/resolveContent'
+import { APP_NAME } from '../lib/config'
 
 export function TopBar({ onToggleSidebar, onOpenHelp }: { onToggleSidebar: () => void; onOpenHelp: () => void }) {
   const { pathname } = useLocation()
+  const { buildModules, tagline, examShortName } = useContent()
+  const first = buildModules[0]
+  const firstLesson = first?.lessons[0]
+  const firstLessonPath = first && firstLesson ? `/build/${first.id}/${firstLesson.id}` : '/'
+
   const track: 'build' | 'exam' | null = pathname.startsWith('/build')
     ? 'build'
     : pathname.startsWith('/exam')
@@ -34,9 +38,12 @@ export function TopBar({ onToggleSidebar, onOpenHelp }: { onToggleSidebar: () =>
           <Menu size={18} />
         </button>
 
-        <Link to="/" className="mr-1 flex items-center gap-2 font-semibold tracking-tight">
+        <Link to="/" className="mr-1 flex items-center gap-2 font-semibold tracking-tight" title={tagline}>
           <span className="grid h-7 w-7 place-items-center rounded-md bg-accent-600 text-white">C</span>
-          <span className="hidden text-ink dark:text-stone-100 sm:inline">Claude Mastery</span>
+          <span className="hidden text-ink dark:text-stone-100 sm:inline">{APP_NAME}</span>
+          <span className="hidden rounded bg-stone-200 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-ink-soft dark:bg-stone-800 dark:text-stone-300 md:inline">
+            {examShortName}
+          </span>
         </Link>
 
         <nav className="ml-1 flex items-center gap-1" aria-label="Tracks">

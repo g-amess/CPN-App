@@ -1,8 +1,9 @@
-import { exercises, domains } from '../content/examTrack'
-
-const domainName = (id: string) => domains.find((d) => d.id === id)?.title ?? id
+import { useContent } from '../content/resolveContent'
 
 export function Exercises() {
+  const { exercises, domains } = useContent()
+  const domainName = (id: string) => domains.find((d) => d.id === id)?.title ?? id
+
   return (
     <div className="animate-fade-in max-w-4xl">
       <h1 className="text-3xl font-bold">Preparation Exercises</h1>

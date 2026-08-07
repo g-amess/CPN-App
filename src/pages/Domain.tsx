@@ -1,8 +1,9 @@
 import { Navigate, useParams, Link } from 'react-router-dom'
-import { domains } from '../content/examTrack'
+import { useContent } from '../content/resolveContent'
 import { Markdown } from '../components/Markdown'
 
 export function DomainPage() {
+  const { domains } = useContent()
   const { domainId = '' } = useParams()
   const domain = domains.find((d) => d.id === domainId)
   if (!domain) return <Navigate to="/exam" replace />

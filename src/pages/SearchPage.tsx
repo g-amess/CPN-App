@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { BookOpen, GraduationCap, ListChecks, HelpCircle, Library } from 'lucide-react'
 import { search, type SearchKind } from '../lib/search'
+import { useContent } from '../content/resolveContent'
 
 const KIND_META: Record<SearchKind, { label: string; icon: typeof BookOpen }> = {
   lesson: { label: 'Lesson', icon: BookOpen },
@@ -13,8 +14,9 @@ const KIND_META: Record<SearchKind, { label: string; icon: typeof BookOpen }> = 
 
 export function SearchPage() {
   const [params] = useSearchParams()
+  const pack = useContent()
   const q = params.get('q') ?? ''
-  const results = useMemo(() => search(q), [q])
+  const results = useMemo(() => search(q, pack), [q, pack])
 
   return (
     <div className="animate-fade-in max-w-3xl">

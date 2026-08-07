@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { conceptIndex } from '../content/conceptIndex'
+import { useContent } from '../content/resolveContent'
 
 export function Concepts() {
+  const { conceptIndex } = useContent()
   const [filter, setFilter] = useState('')
 
   const grouped = useMemo(() => {

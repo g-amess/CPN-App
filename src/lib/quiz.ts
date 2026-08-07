@@ -1,14 +1,5 @@
 import type { Question, OptionKey } from '../content/types'
 
-// Official exam domain weightings (sum to 100).
-export const DOMAIN_WEIGHTS: Record<string, number> = {
-  d1: 27,
-  d2: 18,
-  d3: 20,
-  d4: 20,
-  d5: 15,
-}
-
 export interface PerDomain {
   correct: number
   total: number
@@ -35,16 +26,19 @@ export function countCorrect(
 }
 
 /**
- * Domain-weighted percentage mirroring the exam's 27/18/20/20/15 split.
+ * Domain-weighted percentage mirroring the active exam's domain weights.
  * Each domain contributes its weight × (correct / total in that domain).
  * Domains absent from the quiz are dropped and weights renormalised.
  */
-export function weightedPct(perDomain: Record<string, PerDomain>): number {
+export function weightedPct(
+  perDomain: Record<string, PerDomain>,
+  domainWeights: Record<string, number>,
+): number {
   let weighted = 0
   let weightSum = 0
   for (const [domainId, { correct, total }] of Object.entries(perDomain)) {
     if (total === 0) continue
-    const w = DOMAIN_WEIGHTS[domainId] ?? 0
+    const w = domainWeights[domainId] ?? 0
     weighted += w * (correct / total)
     weightSum += w
   }

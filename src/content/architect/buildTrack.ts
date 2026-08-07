@@ -1,4 +1,4 @@
-import type { BuildModule, Lesson } from './types'
+import type { BuildModule, Lesson } from '../types'
 import { m1 } from './modules/m1-foundations'
 import { m2 } from './modules/m2-prompt-eval'
 import { m3 } from './modules/m3-tool-use'

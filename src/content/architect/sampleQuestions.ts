@@ -1,4 +1,4 @@
-import type { SampleQuestion } from './types'
+import type { SampleQuestion } from '../types'
 
 // The 12 official sample questions from the Claude Certified Architect – Foundations
 // exam guide, reproduced VERBATIM (question text, options, correct answer, explanation).

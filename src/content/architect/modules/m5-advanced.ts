@@ -1,4 +1,4 @@
-import type { BuildModule } from '../types'
+import type { BuildModule } from '../../types'
 
 export const m5: BuildModule = {
   id: 'm5',

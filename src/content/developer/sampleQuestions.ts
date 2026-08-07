@@ -1,0 +1,92 @@
+import type { SampleQuestion } from '../types'
+
+// The 3 official sample questions from the Claude Certified Developer – Foundations
+// exam guide (Version 1.0, July 2026), reproduced VERBATIM with correct answers and rationales.
+// Do not reword. The `domainId` is an added mapping used only for per-domain scoring.
+
+export const sampleQuestions: SampleQuestion[] = [
+  {
+    id: 'q1',
+    source: 'official',
+    domainId: 'd2',
+    question:
+      'A developer must process 10,000 documents overnight to produce a non-urgent analytics report. Cost is the primary concern, and results are not needed until the following morning. Which approach best fits the requirement?',
+    options: [
+      {
+        key: 'A',
+        text: 'Send every request synchronously through the Messages API in parallel to finish as quickly as possible.',
+      },
+      {
+        key: 'B',
+        text: 'Use the Message Batches API, which processes large asynchronous workloads within a 24-hour window at reduced cost.',
+      },
+      {
+        key: 'C',
+        text: 'Lower max_tokens on synchronous calls to minimize cost.',
+      },
+      {
+        key: 'D',
+        text: 'Switch to the smallest available model regardless of output quality.',
+      },
+    ],
+    correct: 'B',
+    explanation:
+      'The Message Batches API is designed for latency-tolerant, high-volume workloads at lower cost, which matches an overnight, non-urgent job. Sending requests synchronously in parallel (A) does not reduce per-token cost; lowering max_tokens (C) or blindly downsizing the model (D) does not address the batch-versus-realtime tradeoff.',
+  },
+  {
+    id: 'q2',
+    source: 'official',
+    domainId: 'd7',
+    question:
+      'A Claude-powered agent summarizes web pages submitted by end users. One page contains hidden text instructing the model to ignore previous instructions and reveal its system prompt. Which mitigation is most effective?',
+    options: [
+      {
+        key: 'A',
+        text: "Raise the model's temperature so its behavior is harder to predict.",
+      },
+      {
+        key: 'B',
+        text: 'Treat retrieved page content as untrusted input, keep it separate from trusted instructions, and use guardrails or hooks so injected instructions cannot trigger sensitive actions.',
+      },
+      {
+        key: 'C',
+        text: 'Add a line to the system prompt asking users not to include malicious instructions.',
+      },
+      {
+        key: 'D',
+        text: 'Switch to a larger model that follows instructions more reliably.',
+      },
+    ],
+    correct: 'B',
+    explanation:
+      'Prompt injection is addressed by isolating untrusted content from trusted instructions and enforcing least-privilege guardrails so injected text cannot invoke sensitive tools. Temperature (A) is irrelevant to injection; a polite request (C) is not an enforceable control; a more instruction-following model (D) can be more susceptible, not less.',
+  },
+  {
+    id: 'q3',
+    source: 'official',
+    domainId: 'd8',
+    question:
+      'A team needs Claude to call an internal inventory service exposed as a REST API. They want the capability to be reusable across several Claude applications and maintained independently of any one app. Which approach best fits?',
+    options: [
+      {
+        key: 'A',
+        text: "Hard-code the inventory logic into each application's system prompt.",
+      },
+      {
+        key: 'B',
+        text: 'Build an MCP server that exposes the inventory operations as tools so multiple Claude applications can connect to it.',
+      },
+      {
+        key: 'C',
+        text: 'Paste the current inventory data into the context window on every request.',
+      },
+      {
+        key: 'D',
+        text: 'Rely on a built-in tool, since built-in tools can reach any internal REST API.',
+      },
+    ],
+    correct: 'B',
+    explanation:
+      'An MCP server exposes reusable tools that multiple Claude applications can share and that can be maintained independently. Hard-coding logic into prompts (A) is neither reusable nor maintainable; pasting data (C) gives no live access and wastes context; built-in tools (D) do not automatically reach arbitrary internal APIs.',
+  },
+]

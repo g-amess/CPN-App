@@ -1,7 +1,8 @@
 import { CheckCircle2, XCircle } from 'lucide-react'
-import { reference } from '../content/examTrack'
+import { useContent } from '../content/resolveContent'
 
 export function Reference() {
+  const { reference } = useContent()
   return (
     <div className="animate-fade-in max-w-4xl">
       <h1 className="text-3xl font-bold">Reference & Scope</h1>

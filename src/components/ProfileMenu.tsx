@@ -1,7 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { Check, ChevronDown, Download, Upload, Pencil, Trash2, UserPlus, X } from 'lucide-react'
-import { useProgress } from '../lib/progress'
+import { useProgress, type Certification } from '../lib/progress'
 import { downloadFile, readFileAsText } from '../lib/exportImport'
+
+const CERT_LABEL: Record<Certification, string> = {
+  architect: 'Architect',
+  developer: 'Developer',
+}
 
 function initials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean)
@@ -25,6 +30,7 @@ export function ProfileMenu() {
   const [open, setOpen] = useState(false)
   const [mode, setMode] = useState<'menu' | 'create' | 'rename'>('menu')
   const [name, setName] = useState('')
+  const [certification, setCertification] = useState<Certification>('architect')
   const [note, setNote] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null)
   const ref = useRef<HTMLDivElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -47,6 +53,7 @@ export function ProfileMenu() {
       setMode('menu')
       setNote(null)
       setName('')
+      setCertification('architect')
     }
   }, [open])
 
@@ -72,7 +79,7 @@ export function ProfileMenu() {
     e.preventDefault()
     if (mode === 'create') {
       if (name.trim()) {
-        createProfile(name)
+        createProfile(name, certification)
         setOpen(false)
       }
     } else if (mode === 'rename' && activeProfile) {
@@ -118,7 +125,10 @@ export function ProfileMenu() {
                         <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-stone-300 text-[10px] font-semibold text-ink dark:bg-stone-700 dark:text-stone-100">
                           {initials(p.displayName)}
                         </span>
-                        <span className="flex-1 truncate">{p.displayName}</span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate">{p.displayName}</span>
+                          <span className="block text-[10px] font-normal text-ink-faint">{CERT_LABEL[p.certification]}</span>
+                        </span>
                         {active && <Check size={14} className="shrink-0 text-accent-600 dark:text-accent-400" />}
                       </button>
                       {profiles.length > 1 && (
@@ -186,6 +196,32 @@ export function ProfileMenu() {
                 placeholder="Display name"
                 className="w-full rounded-md border border-stone-300 bg-white px-2 py-1.5 text-sm dark:border-stone-700 dark:bg-stone-800"
               />
+              {mode === 'create' && (
+                <fieldset className="mt-2">
+                  <legend className="text-xs font-medium text-ink-faint">Certification</legend>
+                  <div className="mt-1 flex gap-2">
+                    {(['architect', 'developer'] as const).map((c) => (
+                      <label
+                        key={c}
+                        className={`flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-md border px-2 py-1.5 text-xs font-medium ${
+                          certification === c
+                            ? 'border-accent-500 bg-accent-50 dark:border-accent-400 dark:bg-accent-950/40'
+                            : 'border-stone-300 dark:border-stone-700'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="pm-cert"
+                          className="sr-only"
+                          checked={certification === c}
+                          onChange={() => setCertification(c)}
+                        />
+                        {CERT_LABEL[c]}
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+              )}
               <button type="submit" disabled={!name.trim()} className="mt-2 w-full rounded-md bg-accent-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-accent-700 disabled:bg-stone-300 dark:disabled:bg-stone-700">
                 {mode === 'create' ? 'Create & switch' : 'Save name'}
               </button>

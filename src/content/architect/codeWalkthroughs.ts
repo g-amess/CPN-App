@@ -1,4 +1,4 @@
-import type { Walkthrough } from './types'
+import type { Walkthrough } from '../types'
 
 // Step-by-step annotated code walkthroughs for code-heavy Build-track topics.
 // Each step reveals one stage with commentary.

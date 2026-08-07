@@ -2,11 +2,9 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Check, X, RotateCcw } from 'lucide-react'
 import type { Question, OptionKey } from '../content/types'
-import { domains } from '../content/examTrack'
+import { useContent } from '../content/resolveContent'
 import { aggregateByDomain, countCorrect, weightedPct, toScaled, type PerDomain } from '../lib/quiz'
 import { useProgress, type QuizAttempt } from '../lib/progress'
-
-const domainName = (id: string) => domains.find((d) => d.id === id)?.title ?? id
 
 interface Props {
   questions: Question[]
@@ -18,6 +16,9 @@ interface Props {
 }
 
 export function QuizRunner({ questions, kind, title, intro, weighted }: Props) {
+  const { domains } = useContent()
+  const domainName = (id: string) => domains.find((d) => d.id === id)?.title ?? id
+  const domainWeights = Object.fromEntries(domains.map((d) => [d.id, d.weight]))
   const { recordQuiz } = useProgress()
   const [answers, setAnswers] = useState<Record<string, OptionKey | undefined>>({})
   const [revealed, setRevealed] = useState<Record<string, boolean>>({})
@@ -43,7 +44,7 @@ export function QuizRunner({ questions, kind, title, intro, weighted }: Props) {
       total: questions.length,
       correct,
       perDomain,
-      weightedPct: weighted ? weightedPct(perDomain) : undefined,
+      weightedPct: weighted ? weightedPct(perDomain, domainWeights) : undefined,
     }
     recordQuiz(attempt)
     setFinished(true)
@@ -60,7 +61,7 @@ export function QuizRunner({ questions, kind, title, intro, weighted }: Props) {
     const perDomain = aggregateByDomain(questions, answers)
     const correct = countCorrect(questions, answers)
     const pct = Math.round((correct / questions.length) * 100)
-    const wPct = weighted ? weightedPct(perDomain) : pct
+    const wPct = weighted ? weightedPct(perDomain, domainWeights) : pct
     const scaled = toScaled(wPct)
     const passed = scaled >= 720
     return (
