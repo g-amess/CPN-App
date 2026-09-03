@@ -59,9 +59,11 @@ export function Flashcard({
           <p className="text-xs font-semibold uppercase tracking-wide text-accent-600 dark:text-accent-400">
             {card.groupLabel}
           </p>
-          <p className="mt-3 text-2xl font-semibold text-ink dark:text-stone-100">{card.term}</p>
+          <p className="mx-auto mt-3 max-w-xl text-lg font-semibold leading-snug text-ink sm:text-xl dark:text-stone-100">
+            {card.term}
+          </p>
           {flipped ? (
-            <p className="mx-auto mt-4 max-w-md text-ink-soft dark:text-stone-300">{card.def}</p>
+            <p className="mx-auto mt-4 max-w-xl leading-relaxed text-ink-soft dark:text-stone-300">{card.def}</p>
           ) : (
             <p className="mt-4 text-sm text-ink-faint">Click or press Space to flip</p>
           )}
