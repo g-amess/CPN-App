@@ -1,4 +1,4 @@
-import type { Domain, ExamScenario, Exercise } from './types'
+import type { Domain, ExamScenario, Exercise } from '../types'
 
 // Exam metadata reproduced from the official guide.
 export const examMeta = {

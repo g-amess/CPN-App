@@ -1,15 +1,42 @@
 import { useEffect } from 'react'
 import { BookOpen, GraduationCap, Layers, ListChecks, X } from 'lucide-react'
 import { APP_NAME } from '../lib/config'
-
-const FEATURES = [
-  { icon: BookOpen, title: 'Build Track', text: 'Lessons across foundations, prompt engineering, tool use, RAG, MCP, Claude Code, and Agent Skills — with diagrams and code.' },
-  { icon: GraduationCap, title: 'Exam Track', text: 'The 5 weighted domains, the 12 official sample questions, scenario simulations, and preparation exercises.' },
-  { icon: Layers, title: 'Flashcards', text: 'A spaced-repetition deck (SM-2) across both tracks, with a daily due queue and export.' },
-  { icon: ListChecks, title: 'Track your readiness', text: 'Your progress, quiz history, and an exam-readiness gauge — all saved locally on this device.' },
-]
+import { useContent } from '../content/resolveContent'
 
 export function WelcomeModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const content = useContent()
+  const sampleCount = content.sampleQuestions.length
+  const domainCount = content.domains.length
+
+  const features = [
+    {
+      icon: BookOpen,
+      title: 'Build Track',
+      text:
+        content.certification === 'developer'
+          ? 'Five Developer Foundations prep modules (MSO → accelerators) with production prompts, agents, MCP, evals, and packaging.'
+          : 'Lessons across foundations, prompt engineering, tool use, RAG, MCP, Claude Code, and Agent Skills — with diagrams and code.',
+    },
+    {
+      icon: GraduationCap,
+      title: 'Exam Track',
+      text:
+        content.certification === 'developer'
+          ? `The ${domainCount} weighted CCDV-F domains, ${sampleCount} official sample questions, and preparation exercises.`
+          : `The ${domainCount} weighted domains, the ${sampleCount} official sample questions, scenario simulations, and preparation exercises.`,
+    },
+    {
+      icon: Layers,
+      title: 'Flashcards',
+      text: 'A spaced-repetition deck (SM-2) across both tracks, with a daily due queue and export.',
+    },
+    {
+      icon: ListChecks,
+      title: 'Track your readiness',
+      text: 'Your progress, quiz history, and an exam-readiness gauge — all saved locally on this device.',
+    },
+  ]
+
   useEffect(() => {
     if (!open) return
     const onEsc = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
@@ -18,6 +45,8 @@ export function WelcomeModal({ open, onClose }: { open: boolean; onClose: () => 
   }, [open, onClose])
 
   if (!open) return null
+
+  const examTitle = content.examMeta.title
 
   return (
     <div
@@ -39,12 +68,21 @@ export function WelcomeModal({ open, onClose }: { open: boolean; onClose: () => 
         </div>
 
         <p className="mt-3 text-sm text-ink-soft dark:text-stone-300">
-          Two tracks in one app — the <strong>Building with the Claude API</strong> course and prep for the
-          <strong> Claude Certified Architect – Foundations</strong> exam. Everything runs locally in your browser.
+          {content.certification === 'developer' ? (
+            <>
+              Prep for the <strong>{examTitle}</strong> exam (CCDV-F). Build and Exam content for this profile is the
+              Developer pack — Architect content stays on a separate profile. Everything runs locally in your browser.
+            </>
+          ) : (
+            <>
+              Two tracks in one app — the <strong>Building with the Claude API</strong> course and prep for the
+              <strong> {examTitle}</strong> exam. Everything runs locally in your browser.
+            </>
+          )}
         </p>
 
         <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-          {FEATURES.map((f) => (
+          {features.map((f) => (
             <li key={f.title} className="rounded-lg border border-stone-200 p-3 dark:border-stone-800">
               <div className="flex items-center gap-2 text-sm font-semibold">
                 <f.icon size={16} className="text-accent-600 dark:text-accent-400" />

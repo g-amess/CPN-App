@@ -1,7 +1,6 @@
 import { Navigate, useParams, Link } from 'react-router-dom'
 import { ChevronLeft, ChevronRight, CheckCircle2, Circle } from 'lucide-react'
-import { findLesson, adjacentLessons, moduleById, buildModules } from '../content/buildTrack'
-import { walkthroughById } from '../content/codeWalkthroughs'
+import { useContent } from '../content/resolveContent'
 import { Markdown } from '../components/Markdown'
 import { Diagram } from '../components/Diagram'
 import { CodeBlock } from '../components/CodeBlock'
@@ -20,13 +19,16 @@ const LESSON_WALKTHROUGHS: Record<string, string[]> = {
 
 export function BuildLesson() {
   const { moduleId = '', lessonId = '' } = useParams()
+  const { findLesson, adjacentLessons, moduleById, buildModules, walkthroughById } = useContent()
   const lesson = findLesson(moduleId, lessonId)
   const mod = moduleById(moduleId)
   const { isLessonComplete, setLessonComplete } = useProgress()
 
   if (!lesson || !mod) {
     const first = buildModules[0]
-    return <Navigate to={`/build/${first.id}/${first.lessons[0].id}`} replace />
+    const firstLesson = first?.lessons[0]
+    if (!first || !firstLesson) return <Navigate to="/" replace />
+    return <Navigate to={`/build/${first.id}/${firstLesson.id}`} replace />
   }
 
   const done = isLessonComplete(lesson.id)

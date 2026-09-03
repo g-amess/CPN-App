@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { RotateCcw, Download } from 'lucide-react'
-import { flashcards } from '../content/flashcards'
+import { useContent } from '../content/resolveContent'
 import { Flashcard } from '../components/Flashcard'
 import { useProgress } from '../lib/progress'
 import { bucketOf, type Grade } from '../lib/srs'
@@ -8,10 +8,8 @@ import { downloadFile, toTSV } from '../lib/exportImport'
 
 type TrackFilter = 'all' | 'build' | 'exam'
 
-// Distinct groups for the secondary filter.
-const groups = Array.from(new Map(flashcards.map((c) => [c.group, { id: c.group, label: c.groupLabel, track: c.track }])).values())
-
 export function Flashcards() {
+  const { flashcards } = useContent()
   const { store, gradeCard } = useProgress()
   const [trackFilter, setTrackFilter] = useState<TrackFilter>('all')
   const [groupFilter, setGroupFilter] = useState<string>('all')
@@ -21,12 +19,20 @@ export function Flashcards() {
 
   const now = Date.now()
 
+  const groups = useMemo(
+    () =>
+      Array.from(
+        new Map(flashcards.map((c) => [c.group, { id: c.group, label: c.groupLabel, track: c.track }])).values(),
+      ),
+    [flashcards],
+  )
+
   const pool = useMemo(
     () =>
       flashcards.filter(
         (c) => (trackFilter === 'all' || c.track === trackFilter) && (groupFilter === 'all' || c.group === groupFilter),
       ),
-    [trackFilter, groupFilter],
+    [trackFilter, groupFilter, flashcards],
   )
 
   const counts = useMemo(() => {
@@ -76,6 +82,12 @@ export function Flashcards() {
         progress is saved automatically.
       </p>
 
+      {flashcards.length === 0 ? (
+        <p className="mt-6 text-sm text-ink-soft dark:text-stone-300">
+          No flashcards in this certification pack yet. They will be authored with the Build modules.
+        </p>
+      ) : (
+        <>
       {/* Counts */}
       <div className="mt-5 grid grid-cols-3 gap-3">
         <div className="card p-3 text-center">
@@ -166,6 +178,8 @@ export function Flashcards() {
           </div>
         )}
       </div>
+        </>
+      )}
     </div>
   )
 }

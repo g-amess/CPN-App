@@ -1,14 +1,10 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { BookOpen, GraduationCap, Layers, Trophy, AlertTriangle, ArrowRight, Trash2 } from 'lucide-react'
-import { totalLessons, buildModules, lessonById } from '../content/buildTrack'
-import { flashcards } from '../content/flashcards'
-import { domains } from '../content/examTrack'
+import { useContent } from '../content/resolveContent'
 import { useProgress } from '../lib/progress'
 import { bucketOf } from '../lib/srs'
 import { ReadinessGauge } from '../components/ReadinessGauge'
-
-const domainName = (id: string) => domains.find((d) => d.id === id)?.title ?? id
 
 function ProgressBar({ value, color = 'bg-accent-500' }: { value: number; color?: string }) {
   return (
@@ -19,11 +15,14 @@ function ProgressBar({ value, color = 'bg-accent-500' }: { value: number; color?
 }
 
 export function Dashboard() {
-  const { store, resetAll } = useProgress()
+  const { store, resetAll, activeProfile } = useProgress()
+  const { totalLessons, buildModules, lessonById, flashcards, domains, examMeta, label } = useContent()
   const now = Date.now()
   const [confirmReset, setConfirmReset] = useState(false)
 
-  const buildPct = Math.round((store.lessonsCompleted.length / totalLessons) * 100)
+  const domainName = (id: string) => domains.find((d) => d.id === id)?.title ?? id
+  const weightHint = domains.map((d) => d.weight).join(' / ')
+  const buildPct = totalLessons ? Math.round((store.lessonsCompleted.length / totalLessons) * 100) : 0
 
   const cardStats = useMemo(() => {
     let due = 0, learned = 0
@@ -35,7 +34,7 @@ export function Dashboard() {
     const newCount = flashcards.length - due - learned
     return { due, learned, new: newCount, total: flashcards.length }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [store.flashcards])
+  }, [store.flashcards, flashcards])
 
   // Aggregate per-domain performance across all quiz history.
   const domainPerf = useMemo(() => {
@@ -53,7 +52,7 @@ export function Dashboard() {
         return { id: d.id, name: d.title, weight: d.weight, pct: pd && pd.total ? Math.round((pd.correct / pd.total) * 100) : null }
       })
       .sort((a, b) => (a.pct ?? 999) - (b.pct ?? 999))
-  }, [store.quizHistory])
+  }, [store.quizHistory, domains])
 
   const bestOfficial = useMemo(() => {
     const officials = store.quizHistory.filter((a) => a.kind === 'official')
@@ -72,7 +71,10 @@ export function Dashboard() {
   return (
     <div className="animate-fade-in max-w-5xl">
       <h1 className="text-3xl font-bold">Dashboard</h1>
-      <p className="mt-2 text-ink-soft dark:text-stone-300">Your progress across both tracks — saved locally in your browser.</p>
+      <p className="mt-2 text-ink-soft dark:text-stone-300">
+        {activeProfile?.displayName ? `${activeProfile.displayName} · ` : ''}
+        {label} — progress saved locally in your browser.
+      </p>
 
       {/* Resume */}
       {lastLesson && resumeLessonTitle && (
@@ -111,7 +113,7 @@ export function Dashboard() {
         <div className="card p-5">
           <div className="flex items-center gap-2 text-ink-faint"><GraduationCap size={16} /><span className="text-sm">Exam track</span></div>
           <p className="mt-2 text-3xl font-bold">{domains.length}<span className="text-lg font-normal text-ink-faint"> domains</span></p>
-          <p className="mt-1 text-xs text-ink-faint">27 / 18 / 20 / 20 / 15 weighting</p>
+          <p className="mt-1 text-xs text-ink-faint">{weightHint || examMeta.examCode || 'weighted domains'}</p>
           <Link to="/exam" className="mt-3 inline-block text-sm font-medium text-accent-700 hover:underline dark:text-accent-300">Overview →</Link>
         </div>
       </div>

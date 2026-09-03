@@ -1,6 +1,7 @@
 import { createContext, useContext, useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { useLocalStorage } from './useLocalStorage'
 import { freshCard, schedule, type CardState, type Grade } from './srs'
+import type { Certification } from '../content/types'
 
 export interface QuizAttempt {
   id: string
@@ -15,10 +16,14 @@ export interface QuizAttempt {
 
 export type Theme = 'light' | 'dark'
 
+export type { Certification }
+
 export interface Profile {
   id: string
   displayName: string
   createdAt: number
+  /** Which certification content pack this profile studies. Defaults to architect for migrated profiles. */
+  certification: Certification
 }
 
 /** Per-profile progress. `theme` is composed in for backwards-compatible reads
@@ -85,10 +90,29 @@ function writeProfileStore(id: string, store: ProfileStore) {
   writeJSON(profileKey(id), store)
 }
 
+function normalizeCertification(value: unknown): Certification {
+  return value === 'developer' ? 'developer' : 'architect'
+}
+
+/** Ensure every profile has a certification (existing profiles → architect). */
+function migrateRegistry(reg: ProfilesRegistry): ProfilesRegistry {
+  let changed = false
+  const profiles = reg.profiles.map((p) => {
+    const raw = p as Profile & { certification?: Certification }
+    if (raw.certification === 'architect' || raw.certification === 'developer') return raw as Profile
+    changed = true
+    return { ...raw, certification: 'architect' as const }
+  })
+  if (!changed) return reg
+  const next = { ...reg, profiles }
+  writeJSON(PROFILES_KEY, next)
+  return next
+}
+
 /** Run once: load the registry, or create it — migrating legacy v1 data into a default profile. */
 function initRegistry(): ProfilesRegistry {
   const existing = readJSON<ProfilesRegistry>(PROFILES_KEY)
-  if (existing && Array.isArray(existing.profiles)) return existing
+  if (existing && Array.isArray(existing.profiles)) return migrateRegistry(existing)
 
   const legacy = readJSON<Record<string, unknown>>(LEGACY_KEY)
   if (legacy) {
@@ -107,7 +131,7 @@ function initRegistry(): ProfilesRegistry {
     }
     const reg: ProfilesRegistry = {
       activeId: id,
-      profiles: [{ id, displayName: 'You', createdAt: Date.now() }],
+      profiles: [{ id, displayName: 'You', createdAt: Date.now(), certification: 'architect' }],
       migratedFromV1: true,
     }
     writeJSON(PROFILES_KEY, reg)
@@ -154,7 +178,7 @@ interface ProgressApi {
   profiles: Profile[]
   activeProfile: Profile | undefined
   hasActiveProfile: boolean
-  createProfile: (name: string) => string
+  createProfile: (name: string, certification: Certification) => string
   switchProfile: (id: string) => void
   renameProfile: (id: string, name: string) => void
   deleteProfile: (id: string) => void
@@ -253,11 +277,18 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
 
   // ---- profiles ----
   const createProfile = useCallback(
-    (name: string) => {
+    (name: string, certification: Certification) => {
       const id = genId()
       const displayName = name.trim() || 'Guest'
       writeProfileStore(id, emptyStore())
-      setRegistry({ ...registry, profiles: [...registry.profiles, { id, displayName, createdAt: Date.now() }], activeId: id })
+      setRegistry({
+        ...registry,
+        profiles: [
+          ...registry.profiles,
+          { id, displayName, createdAt: Date.now(), certification: normalizeCertification(certification) },
+        ],
+        activeId: id,
+      })
       return id
     },
     [registry, setRegistry],
@@ -296,7 +327,14 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
   const exportProgress = useCallback(() => {
     const active = registry.profiles.find((p) => p.id === activeId)
     return JSON.stringify(
-      { kind: 'cma-progress', version: 1, exportedAt: Date.now(), profileName: active?.displayName ?? 'Profile', data: profileStore },
+      {
+        kind: 'cma-progress',
+        version: 2,
+        exportedAt: Date.now(),
+        profileName: active?.displayName ?? 'Profile',
+        certification: active?.certification ?? 'architect',
+        data: profileStore,
+      },
       null,
       2,
     )
@@ -310,7 +348,7 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
       } catch {
         return { ok: false, error: 'That file is not valid JSON.' }
       }
-      const obj = parsed as { kind?: string; data?: Partial<ProfileStore> }
+      const obj = parsed as { kind?: string; certification?: unknown; data?: Partial<ProfileStore> }
       const data = obj && typeof obj === 'object' ? obj.data : undefined
       if (!data || typeof data !== 'object') return { ok: false, error: 'Unrecognized file — missing progress data.' }
       if (!Array.isArray(data.lessonsCompleted) || typeof data.flashcards !== 'object' || !Array.isArray(data.quizHistory)) {
@@ -318,6 +356,19 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
       }
       if (!activeIdRef.current) return { ok: false, error: 'Select or create a profile before importing.' }
       setStore(() => ({ ...emptyStore(), ...data, onboardingSeen: true }))
+      if (obj.certification === 'architect' || obj.certification === 'developer') {
+        const id = activeIdRef.current
+        setRegistryState((prev) => {
+          const next = {
+            ...prev,
+            profiles: prev.profiles.map((p) =>
+              p.id === id ? { ...p, certification: normalizeCertification(obj.certification) } : p,
+            ),
+          }
+          writeJSON(PROFILES_KEY, next)
+          return next
+        })
+      }
       return { ok: true }
     },
     [setStore],

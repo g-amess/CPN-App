@@ -1,4 +1,4 @@
-import type { ConceptEntry } from './types'
+import type { ConceptEntry } from '../types'
 
 // Shared A–Z index of key terms across both tracks. `to` is a HashRouter path.
 

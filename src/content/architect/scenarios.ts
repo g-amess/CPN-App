@@ -1,4 +1,4 @@
-import type { ScenarioSim, Decision } from './types'
+import type { ScenarioSim, Decision } from '../types'
 import { sampleQuestions } from './sampleQuestions'
 import { examScenarios } from './examTrack'
 

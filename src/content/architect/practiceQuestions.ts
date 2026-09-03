@@ -1,4 +1,4 @@
-import type { PracticeQuestion } from './types'
+import type { PracticeQuestion } from '../types'
 
 // Practice questions authored for this app — NOT from the official guide.
 // Each has one correct answer, three plausible distractors, and an explanation

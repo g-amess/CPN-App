@@ -1,5 +1,8 @@
 // Shared content + domain types for both tracks.
 
+/** Which certification content pack a profile studies. */
+export type Certification = 'architect' | 'developer'
+
 export type TrackId = 'build' | 'exam'
 
 export type OptionKey = 'A' | 'B' | 'C' | 'D'

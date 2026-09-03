@@ -2,14 +2,22 @@ import { useMemo } from 'react'
 import { Gauge } from 'lucide-react'
 import type { QuizAttempt } from '../lib/progress'
 import { weightedPct, toScaled, type PerDomain } from '../lib/quiz'
+import { useContent } from '../content/resolveContent'
 
 const PASS = 720
 const MIN = 100
 const MAX = 1000
 
-/** Local exam-readiness estimate from all quiz history, weighted 27/18/20/20/15 and
- *  mapped to the 100–1000 scaled band against the 720 pass line. */
+/** Local exam-readiness estimate from quiz history, weighted by the active exam's
+ *  domain mix and mapped to the 100–1000 scaled band against the 720 pass line. */
 export function ReadinessGauge({ history }: { history: QuizAttempt[] }) {
+  const { domains } = useContent()
+  const domainWeights = useMemo(
+    () => Object.fromEntries(domains.map((d) => [d.id, d.weight])),
+    [domains],
+  )
+  const weightHint = domains.map((d) => d.weight).join('/')
+
   const { scaled, hasData, attempts, answered } = useMemo(() => {
     const agg: Record<string, PerDomain> = {}
     let answered = 0
@@ -22,8 +30,8 @@ export function ReadinessGauge({ history }: { history: QuizAttempt[] }) {
       }
     }
     const hasData = answered > 0
-    return { scaled: toScaled(weightedPct(agg)), hasData, attempts: history.length, answered }
-  }, [history])
+    return { scaled: toScaled(weightedPct(agg, domainWeights)), hasData, attempts: history.length, answered }
+  }, [history, domainWeights])
 
   const pct = (v: number) => ((v - MIN) / (MAX - MIN)) * 100
   const passed = scaled >= PASS
@@ -38,7 +46,7 @@ export function ReadinessGauge({ history }: { history: QuizAttempt[] }) {
       {!hasData ? (
         <p className="mt-2 text-sm text-ink-soft dark:text-stone-300">
           Answer some quiz questions to estimate your readiness. Your score is weighted by the exam’s
-          domain weightings (27/18/20/20/15) and shown against the 720 pass line.
+          domain weightings ({weightHint || 'domain mix'}) and shown against the 720 pass line.
         </p>
       ) : (
         <>

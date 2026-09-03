@@ -1,4 +1,4 @@
-import type { Flashcard } from './types'
+import type { Flashcard } from '../types'
 
 // Term → definition deck across both tracks. Grounded in the source material.
 // `group` is a module id (build) or domain id (exam); groupLabel is the display name.

@@ -1,8 +1,6 @@
 import { NavLink, useLocation } from 'react-router-dom'
 import { Check, Circle } from 'lucide-react'
-import { buildModules } from '../content/buildTrack'
-import { domains } from '../content/examTrack'
-import { scenarioSims } from '../content/scenarios'
+import { useContent } from '../content/resolveContent'
 import { useProgress } from '../lib/progress'
 
 function linkClass(isActive: boolean) {
@@ -19,6 +17,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 
 function BuildNav() {
   const { isLessonComplete } = useProgress()
+  const { buildModules } = useContent()
   return (
     <nav aria-label="Build track">
       {buildModules.map((m) => (
@@ -52,12 +51,18 @@ function BuildNav() {
 }
 
 function ExamNav() {
+  const { domains, scenarioSims, hasScenarios, sampleQuestions } = useContent()
+  const sampleCount = sampleQuestions.length
   return (
     <nav aria-label="Exam track">
       <SectionTitle>Overview</SectionTitle>
       <ul>
         <li><NavLink to="/exam" end className={({ isActive }) => linkClass(isActive)}>Exam Overview</NavLink></li>
-        <li><NavLink to="/exam/quiz" className={({ isActive }) => linkClass(isActive)}>Official Quiz (12)</NavLink></li>
+        <li>
+          <NavLink to="/exam/quiz" className={({ isActive }) => linkClass(isActive)}>
+            Official Quiz ({sampleCount})
+          </NavLink>
+        </li>
         <li><NavLink to="/exam/practice" className={({ isActive }) => linkClass(isActive)}>Practice Questions</NavLink></li>
         <li><NavLink to="/exam/exercises" className={({ isActive }) => linkClass(isActive)}>Preparation Exercises</NavLink></li>
         <li><NavLink to="/exam/reference" className={({ isActive }) => linkClass(isActive)}>Reference & Scope</NavLink></li>
@@ -77,21 +82,29 @@ function ExamNav() {
         ))}
       </ul>
 
-      <SectionTitle>Scenario Sims</SectionTitle>
-      <ul>
-        {scenarioSims.map((s) => (
-          <li key={s.id}>
-            <NavLink to={`/exam/scenario/${s.id}`} className={({ isActive }) => linkClass(isActive)}>
-              {s.num}. {s.title}
-            </NavLink>
-          </li>
-        ))}
-      </ul>
+      {hasScenarios && scenarioSims.length > 0 && (
+        <>
+          <SectionTitle>Scenario Sims</SectionTitle>
+          <ul>
+            {scenarioSims.map((s) => (
+              <li key={s.id}>
+                <NavLink to={`/exam/scenario/${s.id}`} className={({ isActive }) => linkClass(isActive)}>
+                  {s.num}. {s.title}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
     </nav>
   )
 }
 
 function GeneralNav() {
+  const { buildModules } = useContent()
+  const first = buildModules[0]
+  const firstLesson = first?.lessons[0]
+  const buildTo = first && firstLesson ? `/build/${first.id}/${firstLesson.id}` : '/'
   return (
     <nav aria-label="Tools">
       <SectionTitle>Tools</SectionTitle>
@@ -102,7 +115,7 @@ function GeneralNav() {
       </ul>
       <SectionTitle>Start learning</SectionTitle>
       <ul>
-        <li><NavLink to={`/build/${buildModules[0].id}/${buildModules[0].lessons[0].id}`} className={({ isActive }) => linkClass(isActive)}>Build Track</NavLink></li>
+        <li><NavLink to={buildTo} className={({ isActive }) => linkClass(isActive)}>Build Track</NavLink></li>
         <li><NavLink to="/exam" className={({ isActive }) => linkClass(isActive)}>Exam Track</NavLink></li>
       </ul>
     </nav>

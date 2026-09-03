@@ -1,24 +1,34 @@
 import { useMemo, useState } from 'react'
 import { Info } from 'lucide-react'
 import { QuizRunner } from '../components/QuizRunner'
-import { practiceQuestions } from '../content/practiceQuestions'
+import { useContent } from '../content/resolveContent'
 import { shuffle } from '../lib/quiz'
 
 type Mode = 'all' | 'mixed'
 
 export function Practice() {
+  const { practiceQuestions, domains } = useContent()
   const [mode, setMode] = useState<Mode>('all')
   const [seed, setSeed] = useState(0)
+
+  const weightHint = domains.map((d) => d.weight).join('/')
 
   const questions = useMemo(() => {
     if (mode === 'mixed') return shuffle(practiceQuestions)
     return practiceQuestions
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, seed])
+  }, [mode, seed, practiceQuestions])
 
   return (
     <div className="animate-fade-in">
       <h1 className="text-2xl font-bold">Practice Questions</h1>
+      {practiceQuestions.length === 0 ? (
+        <p className="mt-4 text-sm text-ink-soft dark:text-stone-300">
+          Practice questions for this certification pack are not authored yet. Use the official sample quiz on the Exam
+          track meanwhile.
+        </p>
+      ) : (
+        <>
       <div className="mt-3 flex items-start gap-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
         <Info size={16} className="mt-0.5 shrink-0" />
         <p>
@@ -56,11 +66,13 @@ export function Practice() {
           weighted={mode === 'mixed'}
           intro={
             mode === 'mixed'
-              ? 'Questions are shuffled across domains; your final score is weighted 27/18/20/20/15 to mirror the real exam, then mapped onto the 100–1000 scaled band (pass = 720).'
+              ? `Questions are shuffled across domains; your final score is weighted ${weightHint} to mirror the exam domain mix, then mapped onto the 100–1000 scaled band (pass = 720).`
               : undefined
           }
         />
       </div>
+        </>
+      )}
     </div>
   )
 }

@@ -1,9 +1,10 @@
 import { Navigate, useParams, Link } from 'react-router-dom'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { scenarioById, scenarioSims } from '../content/scenarios'
+import { useContent } from '../content/resolveContent'
 import { ScenarioSim } from '../components/ScenarioSim'
 
 export function ScenarioPage() {
+  const { scenarioById, scenarioSims } = useContent()
   const { scenarioId = '' } = useParams()
   const sim = scenarioById(scenarioId)
   if (!sim) return <Navigate to="/exam" replace />

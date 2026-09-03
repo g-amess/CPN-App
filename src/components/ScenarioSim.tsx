@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { Check, X, ChevronRight } from 'lucide-react'
 import type { ScenarioSim as Sim, OptionKey } from '../content/types'
-import { domains } from '../content/examTrack'
-
-const domainName = (id: string) => domains.find((d) => d.id === id)?.title ?? id
+import { useContent } from '../content/resolveContent'
 
 export function ScenarioSim({ sim }: { sim: Sim }) {
+  const { domains } = useContent()
+  const domainName = (id: string) => domains.find((d) => d.id === id)?.title ?? id
   const [step, setStep] = useState(0)
   const [answers, setAnswers] = useState<Record<string, OptionKey>>({})
 
